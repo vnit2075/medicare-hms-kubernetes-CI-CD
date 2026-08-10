@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medicare-app
+  namespace: medicare
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: medicare-app
+  template:
+    metadata:
+      labels:
+        app: medicare-app
+    spec:
+      containers:
+      - name: medicare-app
+        image: vnit2075/medicare-hms:latest
+        ports:
+        - containerPort: 8080
