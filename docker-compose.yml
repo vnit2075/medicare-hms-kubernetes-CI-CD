@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # 1. MySQL Database Container
+  mysql:
+    image: mysql:8.0
+    container_name: medicare-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: medicaredb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      medicare-net:
+        aliases:
+          - mysql-service
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Medicare Spring Boot Application Container
+  medicare-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vnit2075/medicare-hms:latest
+    container_name: medicare-app
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - medicare-net
+
+# Persistent Storage Volume for MySQL
+volumes:
+  mysql_data:
+    driver: local
+
+# Internal Bridge Network for inter-container communication
+networks:
+  medicare-net:
+    driver: bridge
